@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero1 Flat vs Plot</title>
+    <script src="../assets/site.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = { theme: { extend: {
+            colors: { zero1: { 50: '#fff1ec', 100: '#ffe0d5', 500: '#ff5722', 600: '#f4511e', 700: '#d84315' } },
+            fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] }
+        } } }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-zero1-500 selection:text-white">
+
+    <div id="site-header"></div>
+
+    <div class="bg-slate-100 border-b border-slate-200 px-6 py-2.5 sticky top-[73px] z-40">
+        <div class="max-w-7xl mx-auto flex overflow-x-auto space-x-2 text-xs font-bold uppercase tracking-wider">
+            <button id="tab-flat" onclick="showTab('flat')" class="px-4 py-2 rounded-lg whitespace-nowrap">Flat for Consumption</button>
+            <button id="tab-plot" onclick="showTab('plot')" class="px-4 py-2 rounded-lg whitespace-nowrap">Plot + Construction</button>
+        </div>
+    </div>
+
+    <main class="max-w-5xl mx-auto px-4 py-8 w-full flex-grow space-y-6">
+        <p class="text-xs text-slate-500 bg-amber-50 border border-amber-200 rounded-xl p-3">
+            EDUCATIONAL model, not financial advice. Numbers vary by city, project and lender; verify interest rates, stamp duty, registration, cess and construction quotes locally.
+            Based on <a class="underline text-zero1-600" href="../templates/Zero1%20Flat%20vs%20Plot.ods" download>Zero1 Flat vs Plot.ods</a>.
+        </p>
+
+        <!-- FLAT -->
+        <section id="sec-flat" class="space-y-6">
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 space-y-4">
+                <h2 class="text-xl font-extrabold">Buying a flat for consumption</h2>
+                <div id="flat-inputs" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 space-y-3">
+                <h3 class="font-bold">Associated expenses (annual, growing)</h3>
+                <div id="flat-exp" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+            </div>
+            <div id="flat-out" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- PLOT -->
+        <section id="sec-plot" class="space-y-6 hidden">
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 space-y-4">
+                <h2 class="text-xl font-extrabold">Plot</h2>
+                <div id="plot-inputs" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <div id="plot-cost-out" class="text-sm font-semibold text-slate-700"></div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 space-y-4">
+                <h2 class="text-xl font-extrabold">Construction on the plot</h2>
+                <div id="con-inputs" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <div id="con-out" class="text-sm font-semibold text-slate-700 space-y-1"></div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 space-y-4">
+                <h3 class="font-bold">Associated expenses &amp; loan</h3>
+                <div id="plot-exp" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+                <div id="plot-loan" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+            <div id="plot-out" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+        </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script>
+        const inr = v => '₹' + Math.round(v).toLocaleString('en-IN');
+        const pct = v => (v * 100).toFixed(1) + '%';
+        const pmt = (r, n, pv) => r === 0 ? pv / n : pv * r / (1 - Math.pow(1 + r, -n));
+        // Future value of an annual expense growing at g, paid for n years (matches the sheet)
+        const fvAnn = (a, g, n) => g === 0 ? a * n : a * (Math.pow(1 + g, n) - 1) / g;
+
+        const flat = { cost: 10000000, dpPct: 20, rate: 7.85, tenure: 20, appr: 4.5,
+            tax: 0.5, taxG: 5, soc: 0.5, socG: 5, mnt: 0.1, mntG: 5, interior: 850000 };
+        const plot = { size: 500, rate: 8000, stamp: 5, reg: 1, cess: 0.5, legal: 25000, doc: 10000,
+            covg: 450, built: 1750, cpsf: 2500, archPct: 3,
+            cleanup: 20000, soil: 15000, plan: 35000, muni: 50000, water: 15000, elec: 15000, sewage: 10000,
+            kitchen: 200000, wardrobe: 100000, bath: 60000, paint: 100000, interior: 200000, furniture: 800000,
+            supervision: 50000, tempUtil: 15000, contPct: 20,
+            tax: 0.5, waterTax: 3000, mnt: 20000, g: 5,
+            ltv: 80, rate2: 8.5, tenure: 20, appr: 4.5 };
+
+        const labels = {
+            cost: 'Cost of house incl. stamp duty & registration (₹)', dpPct: 'Downpayment (%)', rate: 'Loan interest rate (%)',
+            tenure: 'Loan tenure (years)', appr: 'House appreciation (% p.a.)', interior: 'Interior & furnishing (one-time ₹)',
+            tax: 'Annual property tax (% of cost)', taxG: 'Property tax increment (%)',
+            soc: 'Annual society maintenance (% of cost)', socG: 'Society maintenance increment (%)',
+            mnt: 'House maintenance (% of cost)', mntG: 'House maintenance increment (%)',
+            size: 'Plot size (sq ft)', rate_p: 'Plot rate (₹/sq ft)', stamp: 'Stamp duty (%)', reg: 'Registration (%)',
+            cess: 'Cess/surcharge (%)', legal: 'Legal due diligence (₹)', doc: 'Documentation (₹)',
+            covg: 'Max ground coverage (sq ft)', built: 'Total built-up area (sq ft)', cpsf: 'Construction cost (₹/sq ft)',
+            archPct: 'Architect fee (% of construction)', cleanup: 'Site cleanup (₹)', soil: 'Soil test (₹)',
+            plan: 'Plan approval (₹)', muni: 'Municipal approval & betterment (₹)', water: 'Water connection (₹)',
+            elec: 'Electricity connection (₹)', sewage: 'Sewage / drainage (₹)', kitchen: 'Kitchen setup (₹)',
+            wardrobe: 'Wardrobe (₹)', bath: 'Bathroom fittings (₹)', paint: 'Paint / finishing (₹)',
+            furniture: 'Furniture & appliances (₹)', supervision: 'Site supervision (₹)', tempUtil: 'Temporary site utilities (₹)',
+            contPct: 'Contingency (%)', waterTax: 'Water tax (₹/yr)', g: 'Annual expense increment (%)',
+            ltv: 'Loan sanctioned (% of final cost)', rate2: 'Loan interest rate (%)'
+        };
+
+        function field(obj, key, label, onchange) {
+            const wrap = document.createElement('label');
+            wrap.className = 'block text-xs font-semibold text-slate-500 uppercase tracking-wide';
+            wrap.innerHTML = `${label}<input type="number" step="any" value="${obj[key]}" class="mt-1 block w-full px-3 py-2 normal-case text-sm font-medium text-slate-800 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-zero1-500 focus:outline-none">`;
+            wrap.querySelector('input').addEventListener('input', e => { obj[key] = parseFloat(e.target.value) || 0; onchange(); });
+            return wrap;
+        }
+        function build(id, obj, keys, onchange, overrides = {}) {
+            const el = document.getElementById(id);
+            keys.forEach(k => el.appendChild(field(obj, k, overrides[k] || labels[k] || k, onchange)));
+        }
+        function card(label, value, strong) {
+            return `<div class="bg-white border ${strong ? 'border-zero1-500' : 'border-slate-200'} rounded-2xl p-4 shadow-sm">
+                <span class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">${label}</span>
+                <span class="text-xl font-black ${strong ? 'text-zero1-600' : 'text-slate-900'}">${value}</span></div>`;
+        }
+        function gainCard(gain, pctv) {
+            const good = gain >= 0;
+            return card('Cumulative gain', (good ? '' : '-') + inr(Math.abs(gain)), true) +
+                   card('Gain %', pct(pctv), true);
+        }
+
+        function calcFlat() {
+            const f = flat, dp = f.cost * f.dpPct / 100, loan = f.cost - dp, n = f.tenure;
+            const emi = pmt(f.rate / 1200, n * 12, loan), repay = emi * 12 * n, outlay = dp + repay;
+            const exp = fvAnn(f.cost * f.tax / 100, f.taxG / 100, n) + fvAnn(f.cost * f.soc / 100, f.socG / 100, n) +
+                        fvAnn(f.cost * f.mnt / 100, f.mntG / 100, n) + f.interior;
+            const total = outlay + exp, value = f.cost * Math.pow(1 + f.appr / 100, n), gain = value - total;
+            document.getElementById('flat-out').innerHTML =
+                card('Downpayment', inr(dp)) + card('Loan amount', inr(loan)) + card('EMI', inr(emi)) +
+                card('Total repayment to bank', inr(repay)) + card('Downpayment + repayment', inr(outlay)) +
+                card('Total associated expenses', inr(exp)) + card('Total cost of house', inr(total)) +
+                card(`House value after ${n} yrs`, inr(value)) + gainCard(gain, total ? gain / total : 0);
+        }
+
+        function calcPlot() {
+            const p = plot;
+            const plotCost = p.size * p.rate;
+            const plotTotal = plotCost * (1 + (p.stamp + p.reg + p.cess) / 100) + p.legal + p.doc;
+            const builtCost = p.cpsf * p.built;
+            const arch = builtCost * p.archPct / 100;
+            const conTotal = builtCost + arch + p.cleanup + p.soil + p.plan + p.muni + p.water + p.elec + p.sewage +
+                p.kitchen + p.wardrobe + p.bath + p.paint + p.interior + p.furniture + p.supervision + p.tempUtil;
+            const cont = conTotal * p.contPct / 100, finalCost = conTotal + cont + plotTotal;
+            document.getElementById('plot-cost-out').innerHTML =
+                `Plot cost ${inr(plotCost)} · Total cost of plot (with duties, legal, docs): <span class="text-zero1-600">${inr(plotTotal)}</span>`;
+            document.getElementById('con-out').innerHTML =
+                `<div>Built-up construction: ${inr(builtCost)} · Architect fee: ${inr(arch)}</div>
+                 <div>Total construction: ${inr(conTotal)} · Contingency: ${inr(cont)}</div>
+                 <div class="text-zero1-600">Final cost (plot + construction + contingency): ${inr(finalCost)}</div>`;
+
+            const n = p.tenure, g = p.g / 100;
+            const loan = finalCost * p.ltv / 100, dp = finalCost - loan;
+            const emi = pmt(p.rate2 / 1200, n * 12, loan), repay = emi * 12 * n, outlay = repay + dp;
+            const exp = fvAnn((plotCost + builtCost) * p.tax / 100, g, n) + fvAnn(p.waterTax, g, n) + fvAnn(p.mnt, g, n);
+            const total = outlay + exp, value = finalCost * Math.pow(1 + p.appr / 100, n), gain = value - total;
+            document.getElementById('plot-out').innerHTML =
+                card('Loan sanctioned', inr(loan)) + card('Downpayment', inr(dp)) + card('EMI', inr(emi)) +
+                card('Total repayment to bank', inr(repay)) + card('Downpayment + repayment', inr(outlay)) +
+                card('Total associated expenses', inr(exp)) + card('Total cost of house', inr(total)) +
+                card(`House value after ${n} yrs`, inr(value)) + gainCard(gain, total ? gain / total : 0);
+        }
+
+        build('flat-inputs', flat, ['cost', 'dpPct', 'rate', 'tenure', 'appr', 'interior'], calcFlat);
+        build('flat-exp', flat, ['tax', 'taxG', 'soc', 'socG', 'mnt', 'mntG'], calcFlat);
+        build('plot-inputs', plot, ['size', 'rate', 'stamp', 'reg', 'cess', 'legal', 'doc'], calcPlot, { rate: labels.rate_p });
+        build('con-inputs', plot, ['covg', 'built', 'cpsf', 'archPct', 'cleanup', 'soil', 'plan', 'muni', 'water', 'elec', 'sewage',
+            'kitchen', 'wardrobe', 'bath', 'paint', 'interior', 'furniture', 'supervision', 'tempUtil', 'contPct'], calcPlot,
+            { interior: 'Basic interior (₹)' });
+        build('plot-exp', plot, ['tax', 'waterTax', 'mnt', 'g'], calcPlot,
+            { tax: 'Annual property tax (% of plot + built cost)', mnt: 'Maintenance (₹/yr)' });
+        build('plot-loan', plot, ['ltv', 'rate2', 'tenure', 'appr'], calcPlot);
+
+        function showTab(t) {
+            document.getElementById('sec-flat').classList.toggle('hidden', t !== 'flat');
+            document.getElementById('sec-plot').classList.toggle('hidden', t !== 'plot');
+            ['flat', 'plot'].forEach(x => document.getElementById('tab-' + x).className =
+                'px-4 py-2 rounded-lg whitespace-nowrap ' + (x === t ? 'bg-white text-zero1-600 shadow-sm' : 'text-slate-600 hover:bg-white'));
+            history.replaceState(null, '', '#' + t);
+        }
+        calcFlat(); calcPlot();
+        showTab(location.hash === '#plot' ? 'plot' : 'flat');
+    </script>
+</body>
+</html>
