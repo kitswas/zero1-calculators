@@ -61,9 +61,19 @@
     }
 
     function footerHTML() {
+        const link = (href, text) => `<a href="${href}" target="_blank" rel="noopener" class="text-zero1-600 hover:underline font-semibold">${text}</a>`;
         return `
-        <p>ZERO1 — Powered by modern financial clarity. Illustrative only, not financial advice.</p>
-        <p>Consult a registered financial advisor for your long-term planning.</p>`;
+        <div class="max-w-3xl mx-auto space-y-3 px-4">
+            <p class="font-bold text-slate-700">Zero1 by Zerodha</p>
+            <p>Making money &amp; wealth part of pop culture. A LearnApp × Zerodha joint venture, building a financial media network to help India's zero-to-one money journey.</p>
+            <p class="space-x-3">
+                ${link('https://www.youtube.com/@Zero1byZerodha', 'YouTube')}
+                ${link('https://www.youtube.com/@Zero1hustle', 'Zero1 Hustle')}
+                ${link('https://www.youtube.com/@Zero1Hindi', 'Zero1 Hindi')}
+                ${link('https://www.instagram.com/zero1byzerodha/', 'Instagram')}
+            </p>
+            <p>Demo project. Illustrative only, not financial advice — consult a registered financial advisor for your long-term planning.</p>
+        </div>`;
     }
 
     document.addEventListener('DOMContentLoaded', () => {
