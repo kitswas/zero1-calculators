@@ -72,7 +72,7 @@
                 ${link('https://www.youtube.com/@Zero1Hindi', 'Zero1 Hindi')}
                 ${link('https://www.instagram.com/zero1byzerodha/', 'Instagram')}
             </p>
-            <p>Demo project. Illustrative only, not financial advice — consult a registered financial advisor for your long-term planning.</p>
+            <p>Unofficial demo, not affiliated with Zero1. Zero1 names, logos and workbooks belong to their owners. Illustrative only, not financial advice — consult a registered financial advisor for your long-term planning.</p>
         </div>`;
     }
 

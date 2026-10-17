@@ -16,6 +16,18 @@
 </head>
 <body data-no-header class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-zero1-500 selection:text-white">
 
+    <div id="disclaimer" class="hidden fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="disclaimer-title">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 md:p-8 space-y-4">
+            <h2 id="disclaimer-title" class="text-xl font-extrabold text-slate-900">Demo &amp; disclaimer</h2>
+            <div class="text-sm text-slate-600 space-y-3">
+                <p>This is a <strong>demo</strong> built around Zero1's workbooks. It is <strong>not officially affiliated with, endorsed by, or connected to</strong> Zero1, Zerodha or LearnApp.</p>
+                <p>All copyrighted or trademarked material, including the Zero1 name, logo and banner (<code>assets/</code>) and the workbooks in <code>templates/</code> (<em>Can You Afford a Child</em>, <em>Flat vs Plot</em>, <em>Inflation</em>), belongs to Zero1 and its owners.</p>
+                <p>For educational illustration only. Not financial advice.</p>
+            </div>
+            <button id="disclaimer-ok" class="w-full bg-gradient-to-r from-zero1-600 to-zero1-500 text-white font-bold py-3 rounded-xl hover:opacity-90">I understand</button>
+        </div>
+    </div>
+
     <div class="bg-black">
         <img src="assets/zero1-banner.jpg" alt="Zero1 — Money Lessons to get you from 0 to 1" class="w-full max-w-6xl mx-auto h-auto block">
     </div>
@@ -110,6 +122,13 @@
             if (e.key === 'Enter') { const a = document.querySelector('#results a'); if (a) location.href = a.href; }
         });
         render();
+
+        const dlg = document.getElementById('disclaimer');
+        if (!sessionStorage.getItem('zero1-disclaimer-ack')) dlg.classList.remove('hidden');
+        document.getElementById('disclaimer-ok').addEventListener('click', () => {
+            sessionStorage.setItem('zero1-disclaimer-ack', '1');
+            dlg.classList.add('hidden');
+        });
     </script>
 </body>
 </html>
