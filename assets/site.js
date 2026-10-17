@@ -102,7 +102,7 @@
                 ${link('https://www.youtube.com/@Zero1Hindi', 'Zero1 Hindi')}
                 ${link('https://www.instagram.com/zero1byzerodha/', 'Instagram')}
             </p>
-            <p>Your inputs never leave your computer: all calculations run in your browser and nothing is sent to any server. They are saved only in this browser (localStorage). The site is plain HTML and JavaScript, so you can read or audit every line with View Source. <button type="button" class="underline hover:text-zero1-600" onclick="ZERO1.clearSaved(); location.reload();">Clear saved data</button></p>
+            <p>Your inputs never leave your computer: all calculations run in your browser and nothing is sent to any server. They are saved only in this browser (localStorage). The site is plain HTML and JavaScript, so you can read or audit every line with View Source or on ${link('https://github.com/kitswas/zero1-calculators', 'GitHub')}. <button type="button" class="underline hover:text-zero1-600" onclick="ZERO1.clearSaved(); location.reload();">Clear saved data</button></p>
             <p>Unofficial demo, not affiliated with Zero1. Zero1 names, logos and workbooks belong to their owners. Illustrative only, not financial advice — consult a registered financial advisor for your long-term planning.</p>
         </div>`;
     }

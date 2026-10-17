@@ -48,7 +48,7 @@ The landing page cards, search, header menu and download link are generated from
 
 - Inputs never leave your computer. All calculations run in the browser. The site has no backend, no analytics and no forms that submit anywhere.
 - Inputs are saved only in your browser's `localStorage` (keys start with `zero1:`). Use "Clear saved data" in the footer to remove them.
-- No build step: the source you see in View Source is exactly what runs. Everything is in `index.html`, `calculators/*.html` and `assets/site.js`.
+- No build step: audit the source in View Source or the [GitHub repository](https://github.com/kitswas/zero1-calculators). Everything is in `index.html`, `calculators/*.html` and `assets/site.js`.
 - Third-party requests exist only to load Tailwind, Chart.js and Google Fonts from CDNs. They do not receive your inputs.
 
 ## License
