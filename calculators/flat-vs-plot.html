@@ -42,6 +42,20 @@
                 <div id="flat-exp" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
             </div>
             <div id="flat-out" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 space-y-4">
+                <div>
+                    <h3 class="font-bold">Monthly loan amortization schedule</h3>
+                    <p class="text-xs text-slate-500">Monthly EMI split between principal and interest, with the remaining loan balance.</p>
+                </div>
+                <div class="overflow-auto max-h-[32rem]">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="sticky top-0 bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                            <tr><th class="py-2 px-3">Month</th><th class="py-2 px-3">EMI</th><th class="py-2 px-3">Principal</th><th class="py-2 px-3">Interest</th><th class="py-2 px-3">Closing Balance</th><th class="py-2 px-3">Principal / EMI</th><th class="py-2 px-3">Interest / EMI</th></tr>
+                        </thead>
+                        <tbody id="flat-amortization-schedule" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
         <!-- PLOT -->
@@ -71,6 +85,7 @@
         const PERCENTAGE_DIVISOR = 100;
         const MONTHS_PER_YEAR = 12;
         const MONTHLY_RATE_DIVISOR = PERCENTAGE_DIVISOR * MONTHS_PER_YEAR;
+        const BALANCE_ROUNDING_TOLERANCE = 0.005;
 
         const inr = v => '₹' + Math.round(v).toLocaleString('en-IN');
         const pct = v => (v * PERCENTAGE_DIVISOR).toFixed(1) + '%';
@@ -128,6 +143,26 @@
                    card('Gain %', pct(pctv), true);
         }
 
+        function renderAmortizationSchedule(loan, annualRate, emi, years) {
+            const schedule = document.getElementById('flat-amortization-schedule');
+            const monthCount = Math.round(years * MONTHS_PER_YEAR);
+            if (monthCount <= 0 || !Number.isFinite(monthCount)) {
+                schedule.innerHTML = '';
+                return;
+            }
+            const monthlyRate = annualRate / MONTHLY_RATE_DIVISOR;
+            let balance = loan;
+            const rows = [];
+            for (let month = 1; month <= monthCount; month++) {
+                const interest = balance * monthlyRate;
+                const principal = emi - interest;
+                balance -= principal;
+                if (month === monthCount || Math.abs(balance) < BALANCE_ROUNDING_TOLERANCE) balance = 0;
+                rows.push(`<tr><td class="py-2 px-3">${month}</td><td class="py-2 px-3">${inr(emi)}</td><td class="py-2 px-3">${inr(principal)}</td><td class="py-2 px-3">${inr(interest)}</td><td class="py-2 px-3">${inr(balance)}</td><td class="py-2 px-3">${emi ? pct(principal / emi) : '0.0%'}</td><td class="py-2 px-3">${emi ? pct(interest / emi) : '0.0%'}</td></tr>`);
+            }
+            schedule.innerHTML = rows.join('');
+        }
+
         function calcFlat() {
             const f = flat, dp = f.cost * f.dpPct / PERCENTAGE_DIVISOR, loan = f.cost - dp, n = f.tenure;
             const emi = pmt(f.rate / MONTHLY_RATE_DIVISOR, n * MONTHS_PER_YEAR, loan), repay = emi * MONTHS_PER_YEAR * n, outlay = dp + repay;
@@ -139,6 +174,7 @@
                 card('Total repayment to bank', inr(repay)) + card('Downpayment + repayment', inr(outlay)) +
                 card('Total associated expenses', inr(exp)) + card('Total cost of house', inr(total)) +
                 card(`House value after ${n} yrs`, inr(value)) + gainCard(gain, total ? gain / total : 0);
+            renderAmortizationSchedule(loan, f.rate, emi, n);
         }
 
         function calcPlot() {

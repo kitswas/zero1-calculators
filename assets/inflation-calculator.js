@@ -34,9 +34,9 @@
         return { rates, totalNow, personalRate, projections };
     }
 
-    function calculateGoal(costToday, years) {
-        const standardCost = costToday * Math.pow(1 + STANDARD_INFLATION_RATE, years);
-        const realCost = costToday * Math.pow(1 + GOAL_INFLATION_RATE, years);
+    function calculateGoal(costToday, years, standardRate = STANDARD_INFLATION_RATE, goalRate = GOAL_INFLATION_RATE) {
+        const standardCost = costToday * Math.pow(1 + standardRate, years);
+        const realCost = costToday * Math.pow(1 + goalRate, years);
         return { standardCost, realCost, shortfall: realCost - standardCost };
     }
 
@@ -94,7 +94,11 @@
         function updateGoal() {
             const costToday = parseFloat(get('#goal-cost').value) || 0;
             const years = parseFloat(get('#goal-years').value) || 0;
-            const result = calculateGoal(costToday, years);
+            const standardRate = (parseFloat(get('#goal-standard-rate').value) || 0) / PERCENTAGE_MULTIPLIER;
+            const goalRate = (parseFloat(get('#goal-target-rate').value) || 0) / PERCENTAGE_MULTIPLIER;
+            const result = calculateGoal(costToday, years, standardRate, goalRate);
+            get('#goal-wrong-cost').previousElementSibling.innerText = `Standard inflation estimate (${(standardRate * PERCENTAGE_MULTIPLIER).toFixed(1)}%)`;
+            get('#goal-real-cost').previousElementSibling.innerText = `Goal inflation estimate (${(goalRate * PERCENTAGE_MULTIPLIER).toFixed(1)}%)`;
             get('#goal-wrong-cost').innerText = formatCurrency(result.standardCost);
             get('#goal-real-cost').innerText = formatCurrency(result.realCost);
             get('#goal-shortfall').innerText = formatCurrency(result.shortfall);
@@ -136,7 +140,7 @@
                 const index = parseInt(target.dataset.index, 10);
                 categories[index][target.dataset.field] = parseFloat(target.value) || 0;
                 calculate();
-            } else if (target.id === 'goal-cost' || target.id === 'goal-years') {
+            } else if (['goal-cost', 'goal-years', 'goal-standard-rate', 'goal-target-rate'].includes(target.id)) {
                 updateGoal();
             }
         });
