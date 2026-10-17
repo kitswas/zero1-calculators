@@ -35,12 +35,13 @@
     const PREFIX = 'zero1:';
 
     // Saves inputs in localStorage. Call before the first calculation.
+    // `root` scopes saved fields and event listeners to one calculator.
     // `extra` = { get(): json-able, apply(saved) } for state that lives outside id'd inputs.
-    function persist(key, extra) {
+    function persist(key, root, extra) {
         const k = PREFIX + key;
         let saved = {};
         try { saved = JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { /* storage unavailable or corrupt */ }
-        const fields = () => [...document.querySelectorAll('input[id],select[id]')];
+        const fields = () => [...root.querySelectorAll('input[id],select[id]')];
         const stored = saved.fields || {};
         fields().forEach(el => { if (el.id in stored) el.value = stored[el.id]; });
         if (extra && saved.extra) extra.apply(saved.extra);
@@ -53,8 +54,8 @@
                 try { localStorage.setItem(k, JSON.stringify(data)); } catch (e) { /* quota or private mode */ }
             }, 0);
         };
-        document.addEventListener('input', save);
-        document.addEventListener('change', save);
+        root.addEventListener('input', save);
+        root.addEventListener('change', save);
     }
 
     function clearSaved() {

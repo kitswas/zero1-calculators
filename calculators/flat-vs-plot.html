@@ -165,7 +165,7 @@
                 card(`House value after ${n} yrs`, inr(value)) + gainCard(gain, total ? gain / total : 0);
         }
 
-        ZERO1.persist('flat-vs-plot', {
+        ZERO1.persist('flat-vs-plot', document.querySelector('main'), {
             get: () => ({ flat, plot }),
             apply: s => { Object.assign(flat, s.flat); Object.assign(plot, s.plot); }
         });

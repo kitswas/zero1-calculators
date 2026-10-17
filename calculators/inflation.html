@@ -8,6 +8,7 @@
     <script src="../assets/site.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../assets/inflation-calculator.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
@@ -200,7 +201,7 @@
             { name: "Lifestyle — eating out, OTT, travel, gadgets", now: 13000, before: 10000, years: 4, stdRate: "5.0%", stdVal: 0.05 }
         ];
 
-        let chartInstance = null;
+        const inflationCalculator = ZERO1.createInflationCalculator(document.getElementById('route-inflation'), categories);
         let currentRoute = 'inflation';
         let currentSheetInflation = 'my-inflation';
         let currentSheetChild = 'how-to-use';
@@ -229,7 +230,7 @@
                     if (btn) btn.className = s === sheet ? "px-4 py-2 rounded-lg bg-white text-zero1-600 shadow-sm whitespace-nowrap" : "px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap";
                 });
                 if (sheet === 'year-by-year') {
-                    calculate();
+                    inflationCalculator.calculate();
                 }
             } else if (route === 'child') {
                 currentSheetChild = sheet;
@@ -248,131 +249,6 @@
             return '₹' + Math.round(val).toLocaleString('en-IN');
         }
 
-        function calculate() {
-            let totalNow = 0;
-            let weightedRateSum = 0;
-
-            const tbody = document.querySelector('#inflation-table tbody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            categories.forEach((cat, index) => {
-                totalNow += cat.now;
-                let realRate = cat.stdVal;
-
-                if (cat.now > 0 && cat.before > 0 && cat.years > 0) {
-                    realRate = Math.pow(cat.now / cat.before, 1 / cat.years) - 1;
-                } else if (cat.now === 0) {
-                    realRate = 0;
-                }
-
-                cat.calculatedRate = realRate;
-                weightedRateSum += cat.now * realRate;
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
-                tr.innerHTML = `
-                    <td class="py-3 px-4 font-medium text-slate-800">${cat.name}</td>
-                    <td class="py-3 px-4"><input type="number" value="${cat.now}" data-index="${index}" data-field="now" class="w-28 px-2.5 py-1.5 bg-white border border-slate-300 text-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-zero1-500 focus:outline-none"></td>
-                    <td class="py-3 px-4"><input type="number" value="${cat.before}" data-index="${index}" data-field="before" class="w-28 px-2.5 py-1.5 bg-white border border-slate-300 text-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-zero1-500 focus:outline-none"></td>
-                    <td class="py-3 px-4"><input type="number" value="${cat.years}" data-index="${index}" data-field="years" class="w-16 px-2.5 py-1.5 bg-white border border-slate-300 text-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-zero1-500 focus:outline-none"></td>
-                    <td class="py-3 px-4 text-slate-500 text-xs">${cat.stdRate}</td>
-                    <td class="py-3 px-4 font-bold text-zero1-600">${(realRate * 100).toFixed(1)}%</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            const personalInflationRate = totalNow > 0 ? weightedRateSum / totalNow : 0.06;
-            document.getElementById('total-spend').innerText = formatCurrency(totalNow);
-            document.getElementById('summary-personal-rate').innerText = (personalInflationRate * 100).toFixed(1) + '%';
-            
-            const diff = (personalInflationRate * 100) - 6.0;
-            const diffEl = document.getElementById('price-diff');
-            diffEl.innerText = (diff >= 0 ? '+' : '') + diff.toFixed(1) + '%';
-            diffEl.className = diff >= 0 ? "text-2xl font-bold text-zero1-600" : "text-2xl font-bold text-emerald-600";
-
-            updateProjections(categories, personalInflationRate);
-            updateGoal();
-        }
-
-        function updateProjections(cats, personalRate) {
-            const canvasEl = document.getElementById('projectionChart');
-            if (!canvasEl) return;
-            const ctx = canvasEl.getContext('2d');
-
-            const projTbody = document.querySelector('#projection-table tbody');
-            projTbody.innerHTML = '';
-
-            let chartLabels = [];
-            let chartYourTotal = [];
-            let chartStandardTotal = [];
-
-            let currentVals = cats.map(c => c.now);
-            let standardVals = cats.map(c => c.now);
-
-            for (let yr = 0; yr <= 30; yr++) {
-                let rowTotalYour = currentVals.reduce((a, b) => a + b, 0);
-                let rowTotalStd = standardVals.reduce((a, b) => a + b, 0);
-
-                if (yr % 5 === 0 || yr <= 5 || yr === 30) {
-                    chartLabels.push('Year ' + yr);
-                    chartYourTotal.push(rowTotalYour);
-                    chartStandardTotal.push(rowTotalStd);
-                }
-
-                const tr = document.createElement('tr');
-                tr.className = yr % 5 === 0 ? "bg-zero1-50/50 font-semibold" : "hover:bg-slate-50";
-                tr.innerHTML = `
-                    <td class="py-2.5 px-4 text-slate-700">Year ${yr}</td>
-                    <td class="py-2.5 px-4 text-xs text-slate-600">${formatCurrency(currentVals[0])}</td>
-                    <td class="py-2.5 px-4 text-xs text-slate-600">${formatCurrency(currentVals[1])}</td>
-                    <td class="py-2.5 px-4 text-xs text-slate-600">${formatCurrency(currentVals[2])}</td>
-                    <td class="py-2.5 px-4 text-xs text-slate-600">${formatCurrency(currentVals[3])}</td>
-                    <td class="py-2.5 px-4 text-xs text-slate-600">${formatCurrency(currentVals[4])}</td>
-                    <td class="py-2.5 px-4 text-xs text-slate-600">${formatCurrency(currentVals[5])}</td>
-                    <td class="py-2.5 px-4 font-bold text-zero1-600">${formatCurrency(rowTotalYour)}</td>
-                    <td class="py-2.5 px-4 text-slate-500">${formatCurrency(rowTotalStd)}</td>
-                `;
-                projTbody.appendChild(tr);
-
-                currentVals = currentVals.map((val, idx) => val * (1 + cats[idx].calculatedRate));
-                standardVals = standardVals.map((val, idx) => val * (1 + 0.06));
-            }
-
-            if (chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: chartLabels,
-                    datasets: [
-                        { label: 'TOTAL (Your Real Rate)', data: chartYourTotal, borderColor: '#ff5722', backgroundColor: 'rgba(255, 87, 34, 0.08)', borderWidth: 3, fill: true, tension: 0.2 },
-                        { label: 'If it were 6% (Standard)', data: chartStandardTotal, borderColor: '#94a3b8', borderWidth: 2, borderDash: [5, 5], fill: false, tension: 0.2 }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#334155' }, position: 'bottom' } },
-                    scales: {
-                        x: { ticks: { color: '#64748b' }, grid: { color: '#e2e8f0' } },
-                        y: { ticks: { color: '#64748b', callback: function(v) { return '₹' + (v >= 100000 ? (v/100000).toFixed(1) + ' Lakhs' : v); } }, grid: { color: '#e2e8f0' } }
-                    }
-                }
-            });
-        }
-
-        function updateGoal() {
-            const costToday = parseFloat(document.getElementById('goal-cost').value) || 0;
-            const years = parseFloat(document.getElementById('goal-years').value) || 0;
-            const wrongCost = costToday * Math.pow(1 + 0.06, years);
-            const realCost = costToday * Math.pow(1 + 0.10, years);
-            const shortfall = realCost - wrongCost;
-
-            document.getElementById('goal-wrong-cost').innerText = formatCurrency(wrongCost);
-            document.getElementById('goal-real-cost').innerText = formatCurrency(realCost);
-            document.getElementById('goal-shortfall').innerText = formatCurrency(shortfall);
-        }
-
         function updateChildSummary() {
             const schoolType = document.getElementById('child-school-type')?.value;
             let schoolCost = 2196000;
@@ -389,24 +265,13 @@
             document.getElementById('summary-total-inflated').innerText = '₹' + (totalInflated / 100000).toFixed(1) + ' Lakhs';
         }
 
-        document.addEventListener('input', function(e) {
-            if (e.target.dataset && e.target.dataset.index !== undefined) {
-                const index = parseInt(e.target.dataset.index);
-                const field = e.target.dataset.field;
-                categories[index][field] = parseFloat(e.target.value) || 0;
-                calculate();
-            }
-        });
-
         document.getElementById('child-school-type')?.addEventListener('change', updateChildSummary);
-        document.getElementById('goal-cost').addEventListener('input', updateGoal);
-        document.getElementById('goal-years').addEventListener('input', updateGoal);
 
-        ZERO1.persist('inflation', {
+        ZERO1.persist('inflation', document.querySelector('main'), {
             get: () => categories.map(c => ({ now: c.now, before: c.before, years: c.years })),
             apply: s => s.forEach((v, i) => { if (categories[i]) Object.assign(categories[i], v); })
         });
-        calculate();
+        inflationCalculator.calculate();
     </script>
 </body>
 </html>
