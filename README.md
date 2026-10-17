@@ -44,6 +44,10 @@ Then open <http://localhost:8000>. Tailwind CSS, Chart.js and Google Fonts load 
 
 The landing page cards, search, header menu and download link are generated from that list.
 
+## License
+
+The original code in this repository is released under the [MIT License](LICENSE). That license does **not** cover Zero1's materials: `templates/`, `assets/zero1-banner.jpg`, `assets/zero1-logo.jpg`, the Zero1/Zerodha/LearnApp names and marks, and content derived from the workbooks. Those remain the property of their owners.
+
 ## Notes
 
 - Flat vs Plot is rebuilt from the spreadsheet formulas and matches the sheet's totals with default inputs. The month-by-month loan table is not included.
