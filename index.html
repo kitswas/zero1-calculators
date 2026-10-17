@@ -124,11 +124,8 @@
         render();
 
         const dlg = document.getElementById('disclaimer');
-        if (!sessionStorage.getItem('zero1-disclaimer-ack')) dlg.classList.remove('hidden');
-        document.getElementById('disclaimer-ok').addEventListener('click', () => {
-            sessionStorage.setItem('zero1-disclaimer-ack', '1');
-            dlg.classList.add('hidden');
-        });
+        dlg.classList.remove('hidden');
+        document.getElementById('disclaimer-ok').addEventListener('click', () => dlg.classList.add('hidden'));
     </script>
 </body>
 </html>
