@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zero1 Financial Workbooks Hub</title>
+    <title>Inflation | Zero1 Calculators</title>
     <!-- Tailwind CSS -->
     <script src="../assets/site.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -39,9 +39,9 @@
     <!-- SUB-NAVBAR: TABS PER SHEET -->
     <div id="subnav-inflation" class="bg-slate-100 border-b border-slate-200 px-6 py-2.5 sticky top-[73px] z-40">
         <div class="max-w-7xl mx-auto flex overflow-x-auto space-x-2 text-xs font-bold uppercase tracking-wider">
-            <button onclick="switchSheet('inflation', 'my-inflation')" id="sheet-btn-my-inflation" class="px-4 py-2 rounded-lg bg-white text-zero1-600 shadow-sm whitespace-nowrap">My Inflation</button>
-            <button onclick="switchSheet('inflation', 'year-by-year')" id="sheet-btn-year-by-year" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">Year by Year</button>
-            <button onclick="switchSheet('inflation', 'goal')" id="sheet-btn-goal" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">Goal</button>
+            <button onclick="switchSheet('my-inflation')" id="sheet-btn-my-inflation" class="px-4 py-2 rounded-lg bg-white text-zero1-600 shadow-sm whitespace-nowrap">My Inflation</button>
+            <button onclick="switchSheet('year-by-year')" id="sheet-btn-year-by-year" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">Year by Year</button>
+            <button onclick="switchSheet('goal')" id="sheet-btn-goal" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">Goal</button>
         </div>
     </div>
 
@@ -49,7 +49,7 @@
     <main class="max-w-7xl mx-auto px-4 py-8 space-y-10 flex-grow w-full">
 
         <!-- ========================================== -->
-        <!-- ROUTE 1: ZERO1 INFLATION WORKBOOK         -->
+        <!-- INFLATION: ZERO1 WORKBOOK                 -->
         <!-- ========================================== -->
         <div id="route-inflation" class="space-y-6">
 
@@ -184,13 +184,13 @@
 
 
         <!-- ========================================== -->
-        <!-- ROUTE 2: CHILD AFFORDABILITY WORKBOOK    -->
+        <!-- END: ZERO1 INFLATION WORKBOOK             -->
         <!-- ========================================== -->
     </main>
 
     <div id="site-footer"></div>
 
-    <!-- JavaScript Multi-Route & Multi-Sheet Architecture -->
+    <!-- JavaScript Multi-Sheet Inflation Architecture -->
     <script>
         let categories = [
             { name: "Food & groceries", now: 11500, before: 7000, years: 5, stdRate: "4.0%", stdVal: 0.04 },
@@ -202,70 +202,16 @@
         ];
 
         const inflationCalculator = ZERO1.createInflationCalculator(document.getElementById('route-inflation'), categories);
-        let currentRoute = 'inflation';
-        let currentSheetInflation = 'my-inflation';
-        let currentSheetChild = 'how-to-use';
-
-        function switchRoute(route) {
-            currentRoute = route;
-            document.getElementById('route-inflation').classList.toggle('hidden', route !== 'inflation');
-            document.getElementById('route-child')?.classList.toggle('hidden', route !== 'child');
-            
-            document.getElementById('subnav-inflation').classList.toggle('hidden', route !== 'inflation');
-            document.getElementById('subnav-child')?.classList.toggle('hidden', route !== 'child');
-
-
-            if (route === 'inflation') switchSheet('inflation', currentSheetInflation);
-            if (route === 'child') switchSheet('child', currentSheetChild);
+        function switchSheet(sheet) {
+            ['my-inflation', 'year-by-year', 'goal'].forEach(s => {
+                document.getElementById('sheet-inflation-' + s).classList.toggle('hidden', s !== sheet);
+                const btn = document.getElementById('sheet-btn-' + s);
+                if (btn) btn.className = s === sheet
+                    ? "px-4 py-2 rounded-lg bg-white text-zero1-600 shadow-sm whitespace-nowrap"
+                    : "px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap";
+            });
+            if (sheet === 'year-by-year') inflationCalculator.calculate();
         }
-
-        function switchSheet(route, sheet) {
-            if (route === 'inflation') {
-                currentSheetInflation = sheet;
-                ['my-inflation', 'year-by-year', 'goal'].forEach(s => {
-                    document.getElementById('sheet-inflation-' + s).classList.toggle('hidden', s !== sheet);
-                });
-                ['my-inflation', 'year-by-year', 'goal'].forEach(s => {
-                    const btn = document.getElementById('sheet-btn-' + s);
-                    if (btn) btn.className = s === sheet ? "px-4 py-2 rounded-lg bg-white text-zero1-600 shadow-sm whitespace-nowrap" : "px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap";
-                });
-                if (sheet === 'year-by-year') {
-                    inflationCalculator.calculate();
-                }
-            } else if (route === 'child') {
-                currentSheetChild = sheet;
-                ['how-to-use', 'profile', 'birth', 'first-3-years', 'education', 'coaching', 'healthcare', 'total-summary'].forEach(s => {
-                    document.getElementById('sheet-child-' + s).classList.toggle('hidden', s !== sheet);
-                    const btn = document.getElementById('sheet-btn-' + s);
-                    if (btn) btn.className = s === sheet ? "px-4 py-2 rounded-lg bg-white text-zero1-600 shadow-sm whitespace-nowrap" : "px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap";
-                });
-                if (sheet === 'total-summary') {
-                    updateChildSummary();
-                }
-            }
-        }
-
-        function formatCurrency(val) {
-            return '₹' + Math.round(val).toLocaleString('en-IN');
-        }
-
-        function updateChildSummary() {
-            const schoolType = document.getElementById('child-school-type')?.value;
-            let schoolCost = 2196000;
-            let schoolInflated = 4743360;
-            if (schoolType === 'govt') { schoolCost = 160000; schoolInflated = 345600; }
-            else if (schoolType === 'prem') { schoolCost = 5188000; schoolInflated = 11206080; }
-
-            document.getElementById('summary-school-cost').innerText = formatCurrency(schoolCost);
-            
-            const totalToday = 317500 + 1278000 + schoolCost + 940000 + 286500;
-            const totalInflated = 317500 + 1508040 + schoolInflated + 1692000 + 420000;
-
-            document.getElementById('summary-total-today').innerText = '₹' + (totalToday / 100000).toFixed(1) + ' Lakhs';
-            document.getElementById('summary-total-inflated').innerText = '₹' + (totalInflated / 100000).toFixed(1) + ' Lakhs';
-        }
-
-        document.getElementById('child-school-type')?.addEventListener('change', updateChildSummary);
 
         ZERO1.persist('inflation', document.querySelector('main'), {
             get: () => categories.map(c => ({ now: c.now, before: c.before, years: c.years })),

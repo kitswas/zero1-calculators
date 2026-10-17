@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zero1 Financial Workbooks Hub</title>
+    <title>Can You Afford a Child? | Zero1 Calculators</title>
     <!-- Tailwind CSS -->
     <script src="../assets/site.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -36,25 +36,25 @@
     <div id="site-header"></div>
 
     <!-- SUB-NAVBAR: TABS PER SHEET -->
-    <div id="subnav-child" class="bg-slate-100 border-b border-slate-200 px-6 py-2.5 sticky top-[73px] z-40 hidden">
+    <div id="subnav-child" class="bg-slate-100 border-b border-slate-200 px-6 py-2.5 sticky top-[73px] z-40">
         <div class="max-w-7xl mx-auto flex overflow-x-auto space-x-2 text-xs font-bold uppercase tracking-wider">
-            <button onclick="switchSheet('child', 'how-to-use')" id="sheet-btn-how-to-use" class="px-4 py-2 rounded-lg bg-white text-zero1-600 shadow-sm whitespace-nowrap">How To Use</button>
-            <button onclick="switchSheet('child', 'profile')" id="sheet-btn-profile" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">Your Profile</button>
-            <button onclick="switchSheet('child', 'birth')" id="sheet-btn-birth" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">Birth Cost</button>
-            <button onclick="switchSheet('child', 'first-3-years')" id="sheet-btn-first-3-years" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">First 3 Years</button>
-            <button onclick="switchSheet('child', 'education')" id="sheet-btn-education" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">Education 3-18</button>
-            <button onclick="switchSheet('child', 'coaching')" id="sheet-btn-coaching" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">Coaching & Tuition</button>
-            <button onclick="switchSheet('child', 'healthcare')" id="sheet-btn-healthcare" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">Healthcare 0-18</button>
-            <button onclick="switchSheet('child', 'total-summary')" id="sheet-btn-total-summary" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">TOTAL SUMMARY</button>
+            <button onclick="switchSheet('how-to-use')" id="sheet-btn-how-to-use" class="px-4 py-2 rounded-lg bg-white text-zero1-600 shadow-sm whitespace-nowrap">How To Use</button>
+            <button onclick="switchSheet('profile')" id="sheet-btn-profile" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">Your Profile</button>
+            <button onclick="switchSheet('birth')" id="sheet-btn-birth" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">Birth Cost</button>
+            <button onclick="switchSheet('first-3-years')" id="sheet-btn-first-3-years" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">First 3 Years</button>
+            <button onclick="switchSheet('education')" id="sheet-btn-education" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">Education 3-18</button>
+            <button onclick="switchSheet('coaching')" id="sheet-btn-coaching" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">Coaching & Tuition</button>
+            <button onclick="switchSheet('healthcare')" id="sheet-btn-healthcare" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">Healthcare 0-18</button>
+            <button onclick="switchSheet('total-summary')" id="sheet-btn-total-summary" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap">TOTAL SUMMARY</button>
         </div>
     </div>
 
     <main class="max-w-7xl mx-auto px-4 py-8 space-y-10 flex-grow w-full">
 
         <!-- ========================================== -->
-        <!-- ROUTE 1: ZERO1 INFLATION WORKBOOK         -->
+        <!-- CHILD AFFORDABILITY WORKBOOK              -->
         <!-- ========================================== -->
-        <div id="route-child" class="space-y-6 hidden">
+        <div id="route-child" class="space-y-6">
 
             <!-- Sheet 1: How To Use -->
             <div id="sheet-child-how-to-use" class="space-y-6">
@@ -312,45 +312,18 @@
 
     <div id="site-footer"></div>
 
-    <!-- JavaScript Multi-Route & Multi-Sheet Architecture -->
+    <!-- JavaScript Multi-Sheet Child Calculator Architecture -->
     <script>
-        let currentRoute = 'inflation';
-        let currentSheetInflation = 'my-inflation';
-        let currentSheetChild = 'how-to-use';
-
-        function switchRoute(route) {
-            currentRoute = route;
-            document.getElementById('route-inflation')?.classList.toggle('hidden', route !== 'inflation');
-            document.getElementById('route-child').classList.toggle('hidden', route !== 'child');
-            
-            document.getElementById('subnav-inflation')?.classList.toggle('hidden', route !== 'inflation');
-            document.getElementById('subnav-child').classList.toggle('hidden', route !== 'child');
-
-
-            if (route === 'inflation') switchSheet('inflation', currentSheetInflation);
-            if (route === 'child') switchSheet('child', currentSheetChild);
-        }
-
-        function switchSheet(route, sheet) {
-            if (route === 'inflation') {
-                currentSheetInflation = sheet;
-                ['my-inflation', 'year-by-year', 'goal'].forEach(s => {
-                    document.getElementById('sheet-inflation-' + s).classList.toggle('hidden', s !== sheet);
-                });
-                ['my-inflation', 'year-by-year', 'goal'].forEach(s => {
-                    const btn = document.getElementById('sheet-btn-' + s);
-                    if (btn) btn.className = s === sheet ? "px-4 py-2 rounded-lg bg-white text-zero1-600 shadow-sm whitespace-nowrap" : "px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap";
-                });
-            } else if (route === 'child') {
-                currentSheetChild = sheet;
-                ['how-to-use', 'profile', 'birth', 'first-3-years', 'education', 'coaching', 'healthcare', 'total-summary'].forEach(s => {
-                    document.getElementById('sheet-child-' + s).classList.toggle('hidden', s !== sheet);
-                    const btn = document.getElementById('sheet-btn-' + s);
-                    if (btn) btn.className = s === sheet ? "px-4 py-2 rounded-lg bg-white text-zero1-600 shadow-sm whitespace-nowrap" : "px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap";
-                });
-                if (sheet === 'total-summary') {
-                    updateChildSummary();
-                }
+        function switchSheet(sheet) {
+            ['how-to-use', 'profile', 'birth', 'first-3-years', 'education', 'coaching', 'healthcare', 'total-summary'].forEach(s => {
+                document.getElementById('sheet-child-' + s).classList.toggle('hidden', s !== sheet);
+                const btn = document.getElementById('sheet-btn-' + s);
+                if (btn) btn.className = s === sheet
+                    ? "px-4 py-2 rounded-lg bg-white text-zero1-600 shadow-sm whitespace-nowrap"
+                    : "px-4 py-2 rounded-lg text-slate-600 hover:bg-white whitespace-nowrap";
+            });
+            if (sheet === 'total-summary') {
+                updateChildSummary();
             }
         }
 
@@ -377,7 +350,6 @@
         document.getElementById('child-school-type').addEventListener('change', updateChildSummary);
 
         ZERO1.persist('child', document.getElementById('route-child'));
-        switchRoute('child');
     </script>
 </body>
 </html>
