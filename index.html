@@ -55,6 +55,19 @@
 
     <script>
         const items = ZERO1.calculators;
+        const EXACT_MATCH_SCORE = 100;
+        const PREFIX_MATCH_SCORE = 80;
+        const SUBSTRING_MATCH_SCORE = 60;
+        const TYPO_MATCH_BASE_SCORE = 50;
+        const TYPO_MATCH_PENALTY = 10;
+        const SUBSEQUENCE_MATCH_SCORE = 20;
+        const TITLE_MATCH_WEIGHT = 0.5;
+        const EMPTY_QUERY_SCORE = 1;
+        const MIN_FUZZY_QUERY_LENGTH = 3;
+        const LONG_QUERY_MIN_LENGTH = 6;
+        const SHORT_QUERY_TYPO_TOLERANCE = 1;
+        const LONG_QUERY_TYPO_TOLERANCE = 2;
+        const TYPO_PREFIX_LENGTH_OFFSET = 1;
 
         // Fuzzy score: exact/substring > token prefix > typo-tolerant (edit distance) > subsequence
         function editDistance(a, b) {
@@ -75,27 +88,27 @@
         function tokenScore(q, words) {
             let best = 0;
             for (const w of words) {
-                if (w === q) best = Math.max(best, 100);
-                else if (w.startsWith(q)) best = Math.max(best, 80);
-                else if (q.length > 2 && w.includes(q)) best = Math.max(best, 60);
-                else if (q.length > 2) {
-                    const d = editDistance(q, w.slice(0, q.length + 1)) , d2 = editDistance(q, w);
-                    const dist = Math.min(d, d2), tol = q.length > 5 ? 2 : 1;
-                    if (dist <= tol) best = Math.max(best, 50 - dist * 10);
-                    else if (isSubsequence(q, w)) best = Math.max(best, 20);
+                if (w === q) best = Math.max(best, EXACT_MATCH_SCORE);
+                else if (w.startsWith(q)) best = Math.max(best, PREFIX_MATCH_SCORE);
+                else if (q.length >= MIN_FUZZY_QUERY_LENGTH && w.includes(q)) best = Math.max(best, SUBSTRING_MATCH_SCORE);
+                else if (q.length >= MIN_FUZZY_QUERY_LENGTH) {
+                    const d = editDistance(q, w.slice(0, q.length + TYPO_PREFIX_LENGTH_OFFSET)), d2 = editDistance(q, w);
+                    const dist = Math.min(d, d2), tol = q.length >= LONG_QUERY_MIN_LENGTH ? LONG_QUERY_TYPO_TOLERANCE : SHORT_QUERY_TYPO_TOLERANCE;
+                    if (dist <= tol) best = Math.max(best, TYPO_MATCH_BASE_SCORE - dist * TYPO_MATCH_PENALTY);
+                    else if (isSubsequence(q, w)) best = Math.max(best, SUBSEQUENCE_MATCH_SCORE);
                 }
             }
             return best;
         }
         function score(item, query) {
             const q = query.toLowerCase().trim();
-            if (!q) return 1;
+            if (!q) return EMPTY_QUERY_SCORE;
             const text = `${item.title} ${item.file} ${item.desc} ${item.keywords}`.toLowerCase();
             const words = text.split(/[^a-z0-9]+/).filter(Boolean);
             const titleWords = item.title.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
             let total = 0;
             for (const t of q.split(/\s+/)) {
-                let s = tokenScore(t, words) + tokenScore(t, titleWords) * 0.5;
+                let s = tokenScore(t, words) + tokenScore(t, titleWords) * TITLE_MATCH_WEIGHT;
                 if (s === 0) return 0; // every query term must match something
                 total += s;
             }

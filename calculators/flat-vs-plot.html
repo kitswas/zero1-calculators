@@ -68,8 +68,12 @@
     <div id="site-footer"></div>
 
     <script>
+        const PERCENTAGE_DIVISOR = 100;
+        const MONTHS_PER_YEAR = 12;
+        const MONTHLY_RATE_DIVISOR = PERCENTAGE_DIVISOR * MONTHS_PER_YEAR;
+
         const inr = v => '₹' + Math.round(v).toLocaleString('en-IN');
-        const pct = v => (v * 100).toFixed(1) + '%';
+        const pct = v => (v * PERCENTAGE_DIVISOR).toFixed(1) + '%';
         const pmt = (r, n, pv) => r === 0 ? pv / n : pv * r / (1 - Math.pow(1 + r, -n));
         // Future value of an annual expense growing at g, paid for n years (matches the sheet)
         const fvAnn = (a, g, n) => g === 0 ? a * n : a * (Math.pow(1 + g, n) - 1) / g;
@@ -125,11 +129,11 @@
         }
 
         function calcFlat() {
-            const f = flat, dp = f.cost * f.dpPct / 100, loan = f.cost - dp, n = f.tenure;
-            const emi = pmt(f.rate / 1200, n * 12, loan), repay = emi * 12 * n, outlay = dp + repay;
-            const exp = fvAnn(f.cost * f.tax / 100, f.taxG / 100, n) + fvAnn(f.cost * f.soc / 100, f.socG / 100, n) +
-                        fvAnn(f.cost * f.mnt / 100, f.mntG / 100, n) + f.interior;
-            const total = outlay + exp, value = f.cost * Math.pow(1 + f.appr / 100, n), gain = value - total;
+            const f = flat, dp = f.cost * f.dpPct / PERCENTAGE_DIVISOR, loan = f.cost - dp, n = f.tenure;
+            const emi = pmt(f.rate / MONTHLY_RATE_DIVISOR, n * MONTHS_PER_YEAR, loan), repay = emi * MONTHS_PER_YEAR * n, outlay = dp + repay;
+            const exp = fvAnn(f.cost * f.tax / PERCENTAGE_DIVISOR, f.taxG / PERCENTAGE_DIVISOR, n) + fvAnn(f.cost * f.soc / PERCENTAGE_DIVISOR, f.socG / PERCENTAGE_DIVISOR, n) +
+                        fvAnn(f.cost * f.mnt / PERCENTAGE_DIVISOR, f.mntG / PERCENTAGE_DIVISOR, n) + f.interior;
+            const total = outlay + exp, value = f.cost * Math.pow(1 + f.appr / PERCENTAGE_DIVISOR, n), gain = value - total;
             document.getElementById('flat-out').innerHTML =
                 card('Downpayment', inr(dp)) + card('Loan amount', inr(loan)) + card('EMI', inr(emi)) +
                 card('Total repayment to bank', inr(repay)) + card('Downpayment + repayment', inr(outlay)) +
@@ -140,12 +144,12 @@
         function calcPlot() {
             const p = plot;
             const plotCost = p.size * p.rate;
-            const plotTotal = plotCost * (1 + (p.stamp + p.reg + p.cess) / 100) + p.legal + p.doc;
+            const plotTotal = plotCost * (1 + (p.stamp + p.reg + p.cess) / PERCENTAGE_DIVISOR) + p.legal + p.doc;
             const builtCost = p.cpsf * p.built;
-            const arch = builtCost * p.archPct / 100;
+            const arch = builtCost * p.archPct / PERCENTAGE_DIVISOR;
             const conTotal = builtCost + arch + p.cleanup + p.soil + p.plan + p.muni + p.water + p.elec + p.sewage +
                 p.kitchen + p.wardrobe + p.bath + p.paint + p.interior + p.furniture + p.supervision + p.tempUtil;
-            const cont = conTotal * p.contPct / 100, finalCost = conTotal + cont + plotTotal;
+            const cont = conTotal * p.contPct / PERCENTAGE_DIVISOR, finalCost = conTotal + cont + plotTotal;
             document.getElementById('plot-cost-out').innerHTML =
                 `Plot cost ${inr(plotCost)} · Total cost of plot (with duties, legal, docs): <span class="text-zero1-600">${inr(plotTotal)}</span>`;
             document.getElementById('con-out').innerHTML =
@@ -153,11 +157,11 @@
                  <div>Total construction: ${inr(conTotal)} · Contingency: ${inr(cont)}</div>
                  <div class="text-zero1-600">Final cost (plot + construction + contingency): ${inr(finalCost)}</div>`;
 
-            const n = p.tenure, g = p.g / 100;
-            const loan = finalCost * p.ltv / 100, dp = finalCost - loan;
-            const emi = pmt(p.rate2 / 1200, n * 12, loan), repay = emi * 12 * n, outlay = repay + dp;
-            const exp = fvAnn((plotCost + builtCost) * p.tax / 100, g, n) + fvAnn(p.waterTax, g, n) + fvAnn(p.mnt, g, n);
-            const total = outlay + exp, value = finalCost * Math.pow(1 + p.appr / 100, n), gain = value - total;
+            const n = p.tenure, g = p.g / PERCENTAGE_DIVISOR;
+            const loan = finalCost * p.ltv / PERCENTAGE_DIVISOR, dp = finalCost - loan;
+            const emi = pmt(p.rate2 / MONTHLY_RATE_DIVISOR, n * MONTHS_PER_YEAR, loan), repay = emi * MONTHS_PER_YEAR * n, outlay = repay + dp;
+            const exp = fvAnn((plotCost + builtCost) * p.tax / PERCENTAGE_DIVISOR, g, n) + fvAnn(p.waterTax, g, n) + fvAnn(p.mnt, g, n);
+            const total = outlay + exp, value = finalCost * Math.pow(1 + p.appr / PERCENTAGE_DIVISOR, n), gain = value - total;
             document.getElementById('plot-out').innerHTML =
                 card('Loan sanctioned', inr(loan)) + card('Downpayment', inr(dp)) + card('EMI', inr(emi)) +
                 card('Total repayment to bank', inr(repay)) + card('Downpayment + repayment', inr(outlay)) +

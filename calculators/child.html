@@ -331,20 +331,35 @@
             return '₹' + Math.round(val).toLocaleString('en-IN');
         }
 
+        const RUPEES_PER_LAKH = 100000;
+        const CHILD_SUMMARY_COSTS = {
+            birth: { today: 317500, inflated: 317500 },
+            earlyYears: { today: 1278000, inflated: 1508040 },
+            school: {
+                govt: { today: 160000, inflated: 345600 },
+                mid: { today: 2196000, inflated: 4743360 },
+                prem: { today: 5188000, inflated: 11206080 }
+            },
+            coaching: { today: 940000, inflated: 1692000 },
+            healthcare: { today: 286500, inflated: 420000 }
+        };
+
         function updateChildSummary() {
             const schoolType = document.getElementById('child-school-type').value;
-            let schoolCost = 2196000;
-            let schoolInflated = 4743360;
-            if (schoolType === 'govt') { schoolCost = 160000; schoolInflated = 345600; }
-            else if (schoolType === 'prem') { schoolCost = 5188000; schoolInflated = 11206080; }
+            const schoolCosts = CHILD_SUMMARY_COSTS.school[schoolType] || CHILD_SUMMARY_COSTS.school.mid;
+            const costs = [
+                CHILD_SUMMARY_COSTS.birth,
+                CHILD_SUMMARY_COSTS.earlyYears,
+                schoolCosts,
+                CHILD_SUMMARY_COSTS.coaching,
+                CHILD_SUMMARY_COSTS.healthcare
+            ];
+            const totalToday = costs.reduce((total, cost) => total + cost.today, 0);
+            const totalInflated = costs.reduce((total, cost) => total + cost.inflated, 0);
 
-            document.getElementById('summary-school-cost').innerText = formatCurrency(schoolCost);
-            
-            const totalToday = 317500 + 1278000 + schoolCost + 940000 + 286500;
-            const totalInflated = 317500 + 1508040 + schoolInflated + 1692000 + 420000;
-
-            document.getElementById('summary-total-today').innerText = '₹' + (totalToday / 100000).toFixed(1) + ' Lakhs';
-            document.getElementById('summary-total-inflated').innerText = '₹' + (totalInflated / 100000).toFixed(1) + ' Lakhs';
+            document.getElementById('summary-school-cost').innerText = formatCurrency(schoolCosts.today);
+            document.getElementById('summary-total-today').innerText = '₹' + (totalToday / RUPEES_PER_LAKH).toFixed(1) + ' Lakhs';
+            document.getElementById('summary-total-inflated').innerText = '₹' + (totalInflated / RUPEES_PER_LAKH).toFixed(1) + ' Lakhs';
         }
 
         document.getElementById('child-school-type').addEventListener('change', updateChildSummary);
