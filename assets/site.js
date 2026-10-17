@@ -32,7 +32,36 @@
         download: root + 'templates/' + encodeURIComponent(c.file) + '.ods'
     }));
 
-    window.ZERO1 = { root, calculators: CALCULATORS };
+    const PREFIX = 'zero1:';
+
+    // Saves inputs in localStorage. Call before the first calculation.
+    // `extra` = { get(): json-able, apply(saved) } for state that lives outside id'd inputs.
+    function persist(key, extra) {
+        const k = PREFIX + key;
+        let saved = {};
+        try { saved = JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { /* storage unavailable or corrupt */ }
+        const fields = () => [...document.querySelectorAll('input[id],select[id]')];
+        const stored = saved.fields || {};
+        fields().forEach(el => { if (el.id in stored) el.value = stored[el.id]; });
+        if (extra && saved.extra) extra.apply(saved.extra);
+        let t;
+        const save = () => {
+            clearTimeout(t);
+            t = setTimeout(() => {
+                const data = { fields: {}, extra: extra ? extra.get() : undefined };
+                fields().forEach(el => { data.fields[el.id] = el.value; });
+                try { localStorage.setItem(k, JSON.stringify(data)); } catch (e) { /* quota or private mode */ }
+            }, 0);
+        };
+        document.addEventListener('input', save);
+        document.addEventListener('change', save);
+    }
+
+    function clearSaved() {
+        Object.keys(localStorage).filter(k => k.startsWith(PREFIX)).forEach(k => localStorage.removeItem(k));
+    }
+
+    window.ZERO1 = { root, calculators: CALCULATORS, persist, clearSaved };
 
     const isCurrent = c => new URL(c.href).pathname === location.pathname;
 
@@ -72,6 +101,7 @@
                 ${link('https://www.youtube.com/@Zero1Hindi', 'Zero1 Hindi')}
                 ${link('https://www.instagram.com/zero1byzerodha/', 'Instagram')}
             </p>
+            <p>Your inputs never leave your computer: all calculations run in your browser and nothing is sent to any server. They are saved only in this browser (localStorage). The site is plain HTML and JavaScript, so you can read or audit every line with View Source. <button type="button" class="underline hover:text-zero1-600" onclick="ZERO1.clearSaved(); location.reload();">Clear saved data</button></p>
             <p>Unofficial demo, not affiliated with Zero1. Zero1 names, logos and workbooks belong to their owners. Illustrative only, not financial advice — consult a registered financial advisor for your long-term planning.</p>
         </div>`;
     }

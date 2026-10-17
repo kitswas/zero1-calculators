@@ -165,6 +165,10 @@
                 card(`House value after ${n} yrs`, inr(value)) + gainCard(gain, total ? gain / total : 0);
         }
 
+        ZERO1.persist('flat-vs-plot', {
+            get: () => ({ flat, plot }),
+            apply: s => { Object.assign(flat, s.flat); Object.assign(plot, s.plot); }
+        });
         build('flat-inputs', flat, ['cost', 'dpPct', 'rate', 'tenure', 'appr', 'interior'], calcFlat);
         build('flat-exp', flat, ['tax', 'taxG', 'soc', 'socG', 'mnt', 'mntG'], calcFlat);
         build('plot-inputs', plot, ['size', 'rate', 'stamp', 'reg', 'cess', 'legal', 'doc'], calcPlot, { rate: labels.rate_p });

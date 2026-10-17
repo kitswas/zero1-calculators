@@ -402,6 +402,10 @@
         document.getElementById('goal-cost').addEventListener('input', updateGoal);
         document.getElementById('goal-years').addEventListener('input', updateGoal);
 
+        ZERO1.persist('inflation', {
+            get: () => categories.map(c => ({ now: c.now, before: c.before, years: c.years })),
+            apply: s => s.forEach((v, i) => { if (categories[i]) Object.assign(categories[i], v); })
+        });
         calculate();
     </script>
 </body>

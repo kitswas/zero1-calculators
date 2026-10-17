@@ -44,6 +44,13 @@ Then open <http://localhost:8000>. Tailwind CSS, Chart.js and Google Fonts load 
 
 The landing page cards, search, header menu and download link are generated from that list.
 
+## Privacy and auditability
+
+- Inputs never leave your computer. All calculations run in the browser. The site has no backend, no analytics and no forms that submit anywhere.
+- Inputs are saved only in your browser's `localStorage` (keys start with `zero1:`). Use "Clear saved data" in the footer to remove them.
+- No build step: the source you see in View Source is exactly what runs. Everything is in `index.html`, `calculators/*.html` and `assets/site.js`.
+- Third-party requests exist only to load Tailwind, Chart.js and Google Fonts from CDNs. They do not receive your inputs.
+
 ## License
 
 The original code in this repository is released under the [MIT License](LICENSE). That license does **not** cover Zero1's materials: `templates/`, `assets/zero1-banner.jpg`, `assets/zero1-logo.jpg`, the Zero1/Zerodha/LearnApp names and marks, and content derived from the workbooks. Those remain the property of their owners.
